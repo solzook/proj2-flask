@@ -38,12 +38,27 @@ def process(raw):
                 raise ValueError("Unable to parse date {}".format(content))
 
         elif field == "week":
+            week_start = base
+            try:
+                week_start = base.replace(weeks=+(int(content) - 1))
+            except:
+                raise ValueError("Unable to parsse week number{}".format(content))
+
             if entry:
                 cooked.append(entry)
                 entry = { }
             entry['topic'] = ""
             entry['project'] = ""
             entry['week'] = content
+            entry['date'] = str(week_start.format("MM/DD/YYYY")) #put string representation of date in field for display
+            entry['cur'] = "" #status field used to highlight the current week
+            
+            week_end = week_start.replace(weeks=+1)
+            if(arrow.utcnow().date() >= week_start.date()) and (arrow.utcnow().date() < week_end.date()):
+                #if it is after the start of this week and before the start of next week 
+                entry['cur'] = "true"
+            else:#false state isn't needed for proj2-flask but may as well be included
+                entry['cur'] = "false"
 
         elif field == 'topic' or field == 'project':
             entry[field] = content
